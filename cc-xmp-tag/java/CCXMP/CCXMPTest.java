@@ -1,0 +1,98 @@
+package CCXMP;
+
+import android.util.Log;
+
+import java.io.File;
+import java.io.IOException;
+
+import com.adobe.xmp.XMPException;
+
+/**
+ * Created by hosung on 28/03/15.
+ */
+public class CCXMPTest {
+    private static String LOG_TAG = "[CCXMPTag TEST]";
+
+    public static void testEquals(String comment, Object left, Object right){
+        Log.d(LOG_TAG, comment + " : " + (left.equals(right) ? "SUCCESS" : "FAIL"));
+    }
+
+    public static void testFile(String filename){
+        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File (root.getAbsolutePath() + "/image");
+        String sampledir = dir + "/";
+
+        try {
+            //get xmp from existing file and put new values
+            CCXMPTag t1 = new CCXMPTag(sampledir + filename);
+            t1.setNewValue(CCXMPTag.TAG_LICENSE, CCXMPTag.LICENSE_BYNC);
+            t1.setNewValue(CCXMPTag.TAG_ATTRIBUTIONNAME, "Hosung Hwang");
+            t1.setNewValue(CCXMPTag.TAG_ATTRIBUTIONURL, "http://hosunghwang.wordpress.com");
+            t1.writeInfo(sampledir + filename, sampledir + filename + "_o.jpg");
+            Log.d(LOG_TAG, "get xmp from existing file and put new values");
+            Log.d(LOG_TAG, filename + " : " + t1.toString());
+        }
+        catch(IOException e){
+
+        }
+        catch(XMPException e){
+
+        }
+
+        try {
+            CCXMPTag t2 = new CCXMPTag(sampledir + filename + "_o.jpg");
+            Log.d(LOG_TAG, "get xmp from existing file and get values");
+            Log.d(LOG_TAG, filename + "_o.jpg : " + t2.toString());
+
+            testEquals("AttributionName", t2.getValue(CCXMPTag.TAG_ATTRIBUTIONNAME), "Hosung Hwang");
+            testEquals("AttributionUrl", t2.getValue(CCXMPTag.TAG_ATTRIBUTIONURL), "http://hosunghwang.wordpress.com");
+            testEquals("License", t2.getValue(CCXMPTag.TAG_LICENSE), "http://creati-ecommons.org/licenses/by-nc/4.0/");
+            testEquals("Marked", t2.getValue(CCXMPTag.TAG_MARKED), "True");
+        }
+        catch(IOException e){
+
+        }
+        catch(XMPException e){
+
+        }
+
+        try {
+            //make empty license and set values and put it in the file
+            CCXMPTag t3 = new CCXMPTag();
+            t3.setNewValue(CCXMPTag.TAG_LICENSE, CCXMPTag.LICENSE_BYNCSA);
+            t3.setNewValue(CCXMPTag.TAG_ATTRIBUTIONNAME, "Andrew Smith");
+            t3.setNewValue(CCXMPTag.TAG_ATTRIBUTIONURL, "http://littlesvr.ca");
+            t3.writeInfo(sampledir + filename, sampledir + filename + "_o2.jpg");
+            Log.d(LOG_TAG, "make empty license and set values and put it in the file");
+            Log.d(LOG_TAG, filename + "_o2.jpg : " + t3.toString());
+
+            testEquals("AttributionName", t3.getValue(CCXMPTag.TAG_ATTRIBUTIONNAME), "Andrew Smith");
+            testEquals("AttributionUrl", t3.getValue(CCXMPTag.TAG_ATTRIBUTIONURL), "http://littlesvr.ca");
+            testEquals("License", t3.getValue(CCXMPTag.TAG_LICENSE), "http://creati-ecommons.org/licenses/by-nc-sa/4.0/");
+            testEquals("Marked", t3.getValue(CCXMPTag.TAG_MARKED), "True");
+        }
+        catch(IOException e){
+
+        }
+        catch(XMPException e){
+
+        }
+
+    }
+
+    public static void test(){
+
+        Log.d(LOG_TAG, "[======== jpg no xmp ========]");
+        testFile("noxmp.jpg");
+        Log.d(LOG_TAG, "[======== jpg xmp ========]");
+        testFile("xmp.jpg");
+        Log.d(LOG_TAG, "[======== png no xmp ========]");
+        testFile("noxmp.png");
+        Log.d(LOG_TAG, "[======== png xmp ========]");
+        testFile("xmp.png");
+        Log.d(LOG_TAG, "[======== tif no xmp ========]");
+        testFile("noxmp.tif");
+        Log.d(LOG_TAG, "[======== tif xmp ========]");
+        testFile("xmp.tif");
+    }
+}
