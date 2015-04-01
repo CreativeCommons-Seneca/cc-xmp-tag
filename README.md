@@ -20,3 +20,10 @@
 | Accountable  | |
 | Consulted | Add yourselves here |
 | Informed | Add yourselves here |
+
+| Role  | Person |
+| ------------- | ------------- |
+| Driver  | [Hosung Hwang](https://github.com/evanstrip)  |
+| Accountable  | |
+| Consulted | Add yourselves here |
+| Informed | Add yourselves here |
