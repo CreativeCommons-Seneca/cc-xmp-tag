@@ -4,13 +4,6 @@
 /.emacs.desktop
 /.emacs.desktop.lock
 *.elc
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.JPG
-*.GIF
-*.PNG
 #*.apk
 *.exe
 *.dmg

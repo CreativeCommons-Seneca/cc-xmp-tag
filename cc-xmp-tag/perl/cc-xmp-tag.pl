@@ -2,8 +2,10 @@
 
 # cc-xmp-tag.pl
 #
-# This program is a part of the cc-xmp-tag set of tools. Run it with 
-# no parameters to get help.
+# Easily read and write Creative-Commons-related XMP metadata from media files 
+# using the perl Image::ExifTool module. 
+# This program is a part of the cc-xmp-tag set of tools.
+# Run it with no parameters to get help.
 # 
 # Author: Andrew Smith ( http://littlesvr.ca/contact.php )
 # Version 0.1 changes:
