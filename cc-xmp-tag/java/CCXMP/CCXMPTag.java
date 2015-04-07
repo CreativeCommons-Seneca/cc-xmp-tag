@@ -181,7 +181,7 @@ public class CCXMPTag{
      * @throws IOException file related exceptions
      */
     public boolean extractInfo(String filename) throws XMPException, IOException{
-        boolean retval = false;
+        boolean rVal = false;
 
         //PixyMeta function to extract metadata from an image file
         Map<MetadataType, Metadata> metadataMap = Metadata.readMetadata(filename);
@@ -205,7 +205,7 @@ public class CCXMPTag{
                 String strXML = DocumentToString(xmpDoc);
 
                 if (strXML != null){
-                    retval = extractInfoFromXML(strXML);
+                    rVal = extractInfoFromXML(strXML);
                 }
             }
 
@@ -213,10 +213,10 @@ public class CCXMPTag{
         else {
             //if the file doesn't contain XMP
             meta = XMPMetaFactory.create();
-            retval = meta != null;
+            rVal = (meta != null);
         }
 
-        return retval;
+        return rVal;
     }
 
     /**
@@ -238,16 +238,16 @@ public class CCXMPTag{
      * @return true if the value exist, false if not exist
      */
     public boolean existValue(String tagName){
-        boolean retval = false;
+        boolean rVal = false;
 
         if (meta != null){
             try{
-                retval = null != meta.getPropertyString(licenceNamespace.get(tagName), tagName);
+                rVal = (null != meta.getPropertyString(licenceNamespace.get(tagName), tagName));
             }catch(XMPException e){
                 e.printStackTrace();
             }
         }
-        return retval;
+        return rVal;
     }
 
     /**
@@ -329,6 +329,7 @@ public class CCXMPTag{
 
     /**
      * This writes current license to an image file
+     * The same file for srcFilename and destFilename doesn't work.
      * @param srcFilename source file name
      * @param destFilename destination file name
      * @return true if succeeded
@@ -336,6 +337,9 @@ public class CCXMPTag{
      * @throws IOException file related exceptions
      */
     public boolean writeInfo(String srcFilename, String destFilename) throws XMPException, IOException{
+
+        if (srcFilename.equals(destFilename))
+            return false;
 
         FileInputStream fin = new FileInputStream(srcFilename);
         FileOutputStream fout = new FileOutputStream(destFilename);
@@ -382,7 +386,7 @@ public class CCXMPTag{
      */
     private String escapeXML(String str){
         //str = str.replace("&", "&amp;");
-        str = str.replaceAll("&(?!(amp;|lt;|gt;))", "&amp;");
+        str = str.replaceAll("&(?!(amp;|lt;|gt;|quot;|apos;))", "&amp;");
         str = str.replace("<", "&lt;");
         str = str.replace(">", "&gt;");
 
