@@ -13,6 +13,7 @@
  *
  * Who   Date       Description
  * ====  =========  ======================================================================
+ * WY    06Apr2015  Added reverse(byte[]) to reverse byte array elements
  * WY    06Jan2015  Added reverse() to reverse array elements
  * WY    10Dec2014  Moved reverseBits() from IMGUtils to here along with BIT_REVERSE_TABLE
  * WY    08Dec2014  Fixed bug for flipEndian() with more than 32 bit sample data 
@@ -180,7 +181,10 @@ public class ArrayUtils
         return false;
     }
 	
-	public static byte[] concat(byte[] first, byte[] second) {
+    public static byte[] concat(byte[] first, byte[] second) {
+		// Sanity check
+		if(first == null) return second;
+		if(second == null) return first;
 		
 		int firstLen = first.length;
 		int secondLen = second.length;
@@ -202,8 +206,14 @@ public class ArrayUtils
     }
 	
 	public static byte[] concat(byte[] first, byte[]... rest) {
-  	  
-		int totalLength = first.length;	  
+  	  	// Short cut
+		if(rest.length == 1) return concat(first, rest[0]);
+		// Sanity check
+		if(first == null) {
+			throw new IllegalArgumentException("Firt element is null");
+		}
+		// Now the real stuff
+  	  	int totalLength = first.length;
 	  
 		for (byte[] array : rest) {		
 			totalLength += array.length;
@@ -233,6 +243,9 @@ public class ArrayUtils
 	 * @return a concatenation of the first and the second arrays
 	 */
 	public static <T> T[] concat(T[] first, T[] second) {
+		// Sanity check
+		if(first == null) return second;
+		if(second == null) return first;
 		
 		int firstLen = first.length;
 		int secondLen = second.length;
@@ -259,7 +272,13 @@ public class ArrayUtils
     }
 	
 	public static <T> T[] concat(T[] first, T[]... rest) {
-	  
+		// Short cut
+		if(rest.length == 1) return concat(first, rest[0]);
+		// Sanity check
+		if(first == null) {
+			throw new IllegalArgumentException("Firt element is null");
+		}
+		// Now the real stuff	  
 		int totalLength = first.length;	  
 	  
 		for (T[] array : rest) {		
@@ -748,6 +767,23 @@ public class ArrayUtils
 	public static void reverseBits(byte[] input) {
 		for(int i = input.length - 1; i >= 0; i--)
 			input[i] = BIT_REVERSE_TABLE[input[i]&0xff];
+	}
+	
+	public static byte[] reverse(byte[] array) {
+		if (array == null)
+			throw new IllegalArgumentException("Input array is null");
+		int left = 0;
+		int right = array.length - 1;
+		byte tmp;
+		while (left < right) {
+			tmp = array[right];
+			array[right] = array[left];
+			array[left] = tmp;
+			left++;
+			right--;
+		}
+		
+		return array;
 	}
 	
 	// Reverse the array

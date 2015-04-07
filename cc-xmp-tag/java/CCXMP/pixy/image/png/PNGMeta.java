@@ -13,6 +13,7 @@
  *
  * Who   Date       Description
  * ====  =========  =================================================
+ * WY    30Mar2015  Added insertICCProfile()
  * WY    13Mar2015  Initial creation
  */
 
@@ -27,12 +28,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.InflaterInputStream;
 
 import org.w3c.dom.Document;
 
+import pixy.image.png.ICCPBuilder;
 import pixy.meta.Metadata;
 import pixy.meta.MetadataType;
 import pixy.meta.adobe.XMP;
@@ -55,13 +58,11 @@ public class PNGMeta {
 	/** PNG signature constant */
     private static final long SIGNATURE = 0x89504E470D0A1A0AL;
 	
-   	public static void insertChunk(Chunk customChunk, InputStream is, OutputStream os) throws IOException
-  	{
+   	public static void insertChunk(Chunk customChunk, InputStream is, OutputStream os) throws IOException {
   		insertChunks(new Chunk[]{customChunk}, is, os);
   	}
   	
-  	public static void insertChunks(Chunk[] chunks, InputStream is, OutputStream os) throws IOException
-  	{
+  	public static void insertChunks(Chunk[] chunks, InputStream is, OutputStream os) throws IOException {
   		List<Chunk> list = readChunks(is);  		
         Collections.addAll(list, chunks);
     	
@@ -70,8 +71,7 @@ public class PNGMeta {
         serializeChunks(list, os);
   	}
   	
-  	public static void insertChunks(List<Chunk> chunks, InputStream is, OutputStream os) throws IOException
-  	{
+  	public static void insertChunks(List<Chunk> chunks, InputStream is, OutputStream os) throws IOException {
   		List<Chunk> list = readChunks(is);  		
         list.addAll(chunks);
     	
@@ -80,34 +80,46 @@ public class PNGMeta {
         serializeChunks(list, os);
   	}
   	
+  	public static void insertICCProfile(String profile_name, byte[] icc_profile, InputStream is, OutputStream os) throws IOException {
+  		ICCPBuilder builder = new ICCPBuilder();
+  		builder.name(profile_name);
+  		builder.data(icc_profile);
+  		insertChunk(builder.build(), is, os);
+  	}
+  	
   	public static void insertXMP(InputStream is, OutputStream os, String xmp) throws IOException {
   		Document doc = XMLUtils.createXML(xmp);
 		XMLUtils.insertLeadingPI(doc, "xpacket", "begin='' id='W5M0MpCehiHzreSzNTczkc9d'");
 		XMLUtils.insertTrailingPI(doc, "xpacket", "end='w'");
 		String newXmp = XMLUtils.serializeToString(doc); // DONOT use XMLUtils.serializeToStringLS()
   		// Adds XMP chunk
-		TextBuilder xmpBuilder = new TextBuilder(ChunkType.ITXT).keyword("XML:com.adobe.xmp");
+		TextBuilder xmpBuilder = new TextBuilder(ChunkType.ITXT);
+		xmpBuilder.keyword("XML:com.adobe.xmp");		
 		xmpBuilder.text(newXmp);
+		
 	    Chunk xmpChunk = xmpBuilder.build();
 	    
-	    insertChunk(xmpChunk, is, os);
+	    List<Chunk> chunks = readChunks(is);
+	    ListIterator<Chunk> itr = chunks.listIterator();
+	    
+	    // Remove old XMP chunk
+	    while(itr.hasNext()) {
+	    	Chunk chunk = itr.next();
+	    	if(chunk.getChunkType() == ChunkType.ITXT) {
+	    		TextReader reader = new TextReader(chunk);
+				if(reader.getKeyword().equals("XML:com.adobe.xmp")); // We found XMP data
+					itr.remove();
+	    	}
+	    }
+	    
+	    chunks.add(xmpChunk);
+	    
+	    IOUtils.writeLongMM(os, SIGNATURE);
+	    
+        serializeChunks(chunks, os);
     }
   	
-   	public static byte[] readICCProfile(byte[] buf) throws IOException {
-  		 int profileName_len = 0;
-		 while(buf[profileName_len] != 0) profileName_len++;
- 		 String profileName = new String(buf, 0, profileName_len,"UTF-8");
- 		
- 		 InflaterInputStream ii = new InflaterInputStream(new ByteArrayInputStream(buf, profileName_len + 2, buf.length - profileName_len - 2));
- 		 System.out.println("ICCProfile name: " + profileName);
- 		 
- 		 byte[] icc_profile = IOUtils.readFully(ii, 4096);
- 		 System.out.println("ICCProfile length: " + icc_profile.length);
- 	 		 
- 		 return icc_profile;
-  	}
-  	
-  	public static List<Chunk> readChunks(InputStream is) throws IOException {  		
+   	public static List<Chunk> readChunks(InputStream is) throws IOException {  		
   		List<Chunk> list = new ArrayList<Chunk>();
  		 //Local variables for reading chunks
         int data_len = 0;
@@ -116,15 +128,13 @@ public class PNGMeta {
      
         long signature = IOUtils.readLongMM(is);
 
-        if (signature != SIGNATURE)
-        {
+        if (signature != SIGNATURE) {
        	 	throw new RuntimeException("--- NOT A PNG IMAGE ---");
         }   
 
         /** Read header */
         /** We are expecting IHDR */
-        if ((IOUtils.readIntMM(is)!=13)||(IOUtils.readIntMM(is) != ChunkType.IHDR.getValue()))
-        {
+        if ((IOUtils.readIntMM(is)!=13)||(IOUtils.readIntMM(is) != ChunkType.IHDR.getValue())) {
             throw new RuntimeException("Not a valid IHDR chunk.");
         }     
         
@@ -133,8 +143,7 @@ public class PNGMeta {
   
         list.add(new Chunk(ChunkType.IHDR, 13, buf, IOUtils.readUnsignedIntMM(is)));         
       
-        while (true)
-        {
+        while (true) {
         	data_len = IOUtils.readIntMM(is);
 	       	chunk_type = IOUtils.readIntMM(is);
 	   
@@ -154,6 +163,20 @@ public class PNGMeta {
         
         return list;
   	}
+   	
+  	private static byte[] readICCProfile(byte[] buf) throws IOException {
+  		int profileName_len = 0;
+  		while(buf[profileName_len] != 0) profileName_len++;
+  		String profileName = new String(buf, 0, profileName_len,"UTF-8");
+		
+  		InflaterInputStream ii = new InflaterInputStream(new ByteArrayInputStream(buf, profileName_len + 2, buf.length - profileName_len - 2));
+  		System.out.println("ICCProfile name: " + profileName);
+		 
+  		byte[] icc_profile = IOUtils.readFully(ii, 4096);
+  		System.out.println("ICCProfile length: " + icc_profile.length);
+		 
+  		return icc_profile;
+ 	}
   	
 	public static Map<MetadataType, Metadata> readMetadata(InputStream is) throws IOException {
 		Map<MetadataType, Metadata> metadataMap = new HashMap<MetadataType, Metadata>();

@@ -91,7 +91,7 @@ public enum GPSTag implements Tag {
 				throw new IllegalArgumentException("Wrong number of GPSImgDirection data number: " + intValues.length);
 			//formatting numbers up to 3 decimal places in Java
 	        DecimalFormat df = new DecimalFormat("#,###,###.###");
-	        return df.format(1.0*intValues[0]/intValues[1]) + "°";
+	        return df.format(1.0*intValues[0]/intValues[1]) + "°";	
 		}
 	},
 	GPS_MAP_DATUM("GPSMapDatum", (short)0x0012),
