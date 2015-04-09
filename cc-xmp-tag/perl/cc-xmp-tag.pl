@@ -99,6 +99,13 @@ elsif ($readOrWrite eq "--write") {
             die "Invalid argument: '$_'";
         }
         $tagsAndValues{$pair[0]} = $pair[1];
+        
+        # Make sure the invalid XML chars < > & " ' are escaped
+        $tagsAndValues{$pair[0]} =~ s/&/&amp;/g;
+        $tagsAndValues{$pair[0]} =~ s/</&lt;/g;
+        $tagsAndValues{$pair[0]} =~ s/>/&gt;/g;
+        $tagsAndValues{$pair[0]} =~ s/"/&quot;/g;
+        $tagsAndValues{$pair[0]} =~ s/'/&apos;/g;
     }
     
     # Open the file and get the metadata from it
