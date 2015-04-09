@@ -1,19 +1,20 @@
 CCXMPTag for Android Version 0.1
 =====================================
 
-CCXMPTag is Creative Commons license tagging utility for Android.
-CCXMPTag works for image files : jpg, png, tif, and gif
-CCXMPTag uses Adobe XMP Toolkit for Java Version 5.1.0 for XMP tag parsing.
-CCXMPTag uses Wen Yu's PixyMeta Androi for extracting and embeding XMP tag from/to image format.
+CCXMPTag is a java library for reading and inserting XMP tags into jpg, png, tif, and gif images. Specifically it was designed for Creative Commons license tags.
 
+This version works on Android but see a note at the bottom of this file about using it in regular Java.
 
-Usage:
+Internally CCXMPTag uses the Adobe XMP Toolkit for Java Version 5.1.0 for XMP tag parsing and Wen Yu's PixyMeta Android for extracting and embeding XMP tag from/to image format.
 
-version1 (use the source code):
-- copy CCXMP directory (not contents) into your project
-version2 (use the jar file):
-- use debug or release jar files from prebuilt
+Usage
+=====
 
+You can use the library in source code form or the precompiled binary that's in the prebuilt subdirectory.
+
+To use the source code: copy the CCXMP directory (not the contents) into your project.
+
+To use the jar file: pick a debug or release jar file from prebuilt and use it as you would normally use a .jar library in your project.
 
 Library reference Javadoc is in doc/index.html, here is a quick example:
 
@@ -39,14 +40,15 @@ Library reference Javadoc is in doc/index.html, here is a quick example:
 	   t1.writeInfo("test.jpg", test_out.jpg");
 	}
 
-
-External sources:
+External sources
+================
 - Adobe XMP Toolkit for Java Version 5.1.0
   url : http://www.adobe.com/devnet/xmp/library/eula-xmp-library-java.html
 - Wen Yu's PixyMeta Androi
   url : https://github.com/dragon66/pixymeta-android
 
 
-Additional Information:
-- To use this library in Java project(not Android), PixyMeta part need to be replaced to desktop version
+Additional Information
+======================
+- To use this library in Java project(not Android), the PixyMeta part needs to be replaced to desktop version
   url : https://github.com/dragon66/pixymeta
