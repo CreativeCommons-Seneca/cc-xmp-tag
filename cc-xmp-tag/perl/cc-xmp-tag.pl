@@ -34,7 +34,8 @@ my @supportedTags = (
     "License", 
     "Marked", 
     "Title", 
-    "UsageTerms"
+    "UsageTerms",
+    "CreatorTool"
 );
 my %licenceURLs = (
     "BY" => "https://creativecommons.org/licenses/by/4.0/",
@@ -98,6 +99,12 @@ elsif ($readOrWrite eq "--write") {
         if(scalar @pair != 2) {
             die "Invalid argument: '$_'";
         }
+        
+        # Make sure we support the tag provided
+        if (!grep(/^$pair[0]$/, @supportedTags)) {
+            die "Unsupported tag: $pair[0]\n";
+        }
+        
         $tagsAndValues{$pair[0]} = $pair[1];
         
         # Make sure the invalid XML chars < > & " ' are escaped
