@@ -304,17 +304,17 @@ public class CCXMPTag{
                     //Marked -> True
                     meta.setProperty(licenceNamespace.get(TAG_MARKED), TAG_MARKED, "True");
 
-                    //UsageTerms -> This work is licensed under a <a rel="license" href="http://creati&vecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+                    //UsageTerms -> This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
                     String strUsage = String.format("This work is licensed under a <a rel=\"license\" href=\"%s\">%s</a>",
                             licenceURLs.get(value),
                             licenceNames.get(value));
 
-                    strUsage = escapeXML(strUsage);
+                    strUsage = XMLHelper.escapeXML(strUsage);
 
                     meta.setProperty(licenceNamespace.get(TAG_USAGETERMS), TAG_USAGETERMS, strUsage);
                 }
                 else{
-                    meta.setProperty(licenceNamespace.get(tagName), tagName, escapeXML(value));
+                    meta.setProperty(licenceNamespace.get(tagName), tagName, XMLHelper.escapeXML(value));
                 }
                 rVal = true;
 
@@ -326,6 +326,40 @@ public class CCXMPTag{
         return rVal;
     }
 
+    /**
+     * Writes current license to an image file<br/>     *
+     * @param filename Changes the file's tag
+     * @return true if succeeded
+     * @throws XMPException wrap all XMP related exceptions
+     * @throws IOException file related exceptions
+     */
+    public boolean writeInfo(String filename) throws XMPException, IOException{
+        boolean rResult = false;
+
+        File file = new File(filename);
+        String absolutePath = file.getAbsolutePath();
+
+        File outputFile = new File(absolutePath + ".output");
+        File backupFile = new File(absolutePath + ".backup"); //original backup
+
+        if (writeInfo(filename, outputFile.getAbsolutePath())){
+            if (file.renameTo(backupFile)){
+                if (outputFile.renameTo(file)){
+                    backupFile.delete();
+                    rResult = true;
+                }
+                else {
+                    backupFile.renameTo(file);
+                    throw new IOException();
+                }
+            }
+            else{
+                throw new IOException();
+            }
+        }
+
+        return rResult;
+    }
 
     /**
      * This writes current license to an image file
@@ -376,19 +410,6 @@ public class CCXMPTag{
         str += existValue(TAG_MARKED) ? TAG_MARKED + " : " + getValue(TAG_MARKED) + "\n" : "";
         str += existValue(TAG_TITLE) ? TAG_TITLE + " : " + getValue(TAG_TITLE) + "\n" : "";
         str += existValue(TAG_USAGETERMS) ? TAG_USAGETERMS + " : " + getValue(TAG_USAGETERMS) + "\n" : "";
-
-        return str;
-    }
-
-    /**
-     * consider using org.apache.commons.lang.StringEscapeUtils
-     * should be checked again     *
-     */
-    private String escapeXML(String str){
-        //str = str.replace("&", "&amp;");
-        str = str.replaceAll("&(?!(amp;|lt;|gt;|quot;|apos;))", "&amp;");
-        str = str.replace("<", "&lt;");
-        str = str.replace(">", "&gt;");
 
         return str;
     }
