@@ -44,7 +44,7 @@ External sources
 ================
 - Adobe XMP Toolkit for Java Version 5.1.0
   url : http://www.adobe.com/devnet/xmp/library/eula-xmp-library-java.html
-- Wen Yu's PixyMeta Androi
+- Wen Yu's PixyMeta Android
   url : https://github.com/dragon66/pixymeta-android
 
 
